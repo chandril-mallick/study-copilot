@@ -9,7 +9,12 @@ class WebSocketService {
   }
 
   connect(token) {
+    if (!token) {
+      console.error('WebSocket connection failed: No token provided');
+      return;
+    }
     const wsUrl = `ws://localhost:8000/ws?token=${token}`;
+    console.log(`Attempting WebSocket connection to: ws://localhost:8000/ws`);
     
     try {
       this.ws = new WebSocket(wsUrl);

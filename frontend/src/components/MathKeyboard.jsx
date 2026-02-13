@@ -26,11 +26,10 @@ const MathKeyboard = ({ value, onChange, onSend, className }) => {
       mathfield.addEventListener("keydown", handleKeydown);
 
       // Customize the mathfield
-      mathfield.setOptions({
-        virtualKeyboardMode: "onfocus",
-        smartMode: true,
-        virtualKeyboards: "all",
-      });
+      // Use "manual" policy so the virtual keyboard doesn't pop up automatically
+      // This allows the user to use their physical keyboard.
+      mathfield.mathVirtualKeyboardPolicy = "manual";
+      mathfield.smartMode = true;
 
       // Maintain focus if mathMode was just enabled
       mathfield.focus();

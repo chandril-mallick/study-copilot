@@ -40,6 +40,10 @@ def safe_parse(expr_str: str):
         for u_char, std_char in unicode_map.items():
             expr_str = expr_str.replace(u_char, std_char)
 
+        # Handle LaTeX text artifacts that might appear in input
+        expr_str = expr_str.replace(r"\textasciicircum", "^")
+        expr_str = expr_str.replace(r"\textasciitilde", "~")
+
         # Pre-process trigonometric powers like sin^2(x) -> (sin(x))**2
         # This handles sin^2x, cos^3(x), tan^4 x etc.
         trig_functions = "sin|cos|tan|sec|csc|cot|log|exp"
@@ -80,13 +84,21 @@ def safe_parse(expr_str: str):
         # 5. Remove calculus notation (dx, dt, dy, etc.)
         # Remove d* followed by boundary variable (e.g., dx, dt)
         clean_str = re.sub(r"(?i)\b(d|\\Delta|differential|partial)\s*[x-z]\b", " ", clean_str)
-        # remove a stray x, y, z at the end of the expression if it follows a space
-        clean_str = re.sub(r"(?i)\s+[x-z]\s*$", " ", clean_str)
         
         # 6. Normalize variable names and remove trailing punctuation
         clean_str = clean_str.replace(",", " ").strip()
+        
+        # Handle 'infinity' and 'oo' explicitly
+        if clean_str.lower() in ["infinity", "inf"]:
+            clean_str = "oo"
+            
         if 'X' in clean_str:
             clean_str = clean_str.replace('X', 'x')
+            
+        # Map 'e' to 'E' (Euler's number) for SymPy parsing
+        # We do this carefully to avoid replacing 'e' inside words (though we already stripped most keywords)
+        # Replacing solo 'e' or 'e' as a base in e^x
+        clean_str = re.sub(r"\be\b", "E", clean_str)
             
         # 7. Final trim
         clean_str = clean_str.strip()
@@ -119,7 +131,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 def get_mit_style_header(title):
-    return f"#### Principles of Discrete Applied Mathematics\n### {title}\n"
+    return f"#### Principles of Discrete Applied Mathematics\n### Operation Type: {title}\n"
 
 def extract_json(text: str) -> Optional[Dict[str, Any]]:
     """Robustly extract JSON from text even if LLM includes markers or preamble."""
@@ -196,7 +208,7 @@ $$ f(x) = \\frac{{{latex(u)}}}{{{latex(v)}}} $$
 ---
 **2. Theoretical Foundation**
 We utilize the **Quotient Rule**, which states that for a function $f(x) = \\frac{{u(x)}}{{v(x)}}$:
-$$ \\frac{{d}}{{dx}} \\left[ \\frac{{u}}{{v}} \\right] = \\frac{{u'v - uv'}}{{v^2}} $$
+$$ \\frac{{d}}{{dx}} \\left[ \\frac{{u}}{{v}} \\right] = \\frac{{u'v - uv'}}{{v^{{2}}}} $$
 
 ---
 **3. Analytical Derivation**
@@ -204,16 +216,16 @@ $$ \\frac{{d}}{{dx}} \\left[ \\frac{{u}}{{v}} \\right] = \\frac{{u'v - uv'}}{{v^
 *   **Step 2:** Compute $u' = \\frac{{du}}{{dx}} = {latex(u_prime)}$.
 *   **Step 3:** Compute $v' = \\frac{{dv}}{{dx}} = {latex(v_prime)}$.
 *   **Step 4:** Substitute components into the rule:
-$$ f'(x) = \\frac{{ \\left({latex(u_prime)}\\right)\\left({latex(v)}\\right) - \\left({latex(u)}\\right)\\left({latex(v_prime)}\\right) }}{{ \\left({latex(v)}\\right)^2 }} $$
+$$ f'(x) = \\frac{{ \\left({latex(u_prime)}\\right)\\left({latex(v)}\\right) - \\left({latex(u)}\\right)\\left({latex(v_prime)}\\right) }}{{ \\left({latex(v)}\\right)^{{2}} }} $$
 
 ---
 **4. Final Analytical Result**
 The simplified derivative is:
-$$ \\mathbf{{\\frac{{df}}{{dx}} = {latex(final_res)}}} $$
+$$\\boxed{{ \\frac{{df}}{{dx}} = {latex(final_res)} }}$$
 
 ---
 **5. Mathematical Insight**
-The result represents the slope of the tangent line to the curve at any point $x$. Quotient rules are essential for analyzing rates of change in rational functions.
+The Quotient Rule is a fundamental analytical technique in calculus for determining the rate of change of rational functions. The result represents the precise slope of the tangent line to the curve at any given point $x$ where $v(x) \\neq 0$.
 """
 
     # Check for Product Rule: u * v
@@ -252,12 +264,12 @@ $$ f'(x) = \\left({latex(u_prime)}\\right)\\left({latex(v)}\\right) + \\left({la
 
 ---
 **4. Final Analytical Result**
-After algebraic simplification and factoring:
-$$ \\mathbf{{\\frac{{df}}{{dx}} = {latex(final_res)}}} $$
+After algebraic simplification:
+$$\\boxed{{ \\frac{{df}}{{dx}} = {latex(final_res)} }}$$
 
 ---
 **5. Mathematical Insight**
-The Product Rule demonstrates that the rate of change of a product is not simply the product of the rates of change, but a weighted sum that accounts for the interaction between both functions.
+The Product Rule demonstrates that the rate of change of a product is a weighted sum that accounts for the interaction between both components. This reflects how the variation in one factor scales the value of the other factor in real-time.
 """
 
     res = diff(expr, x)
@@ -269,74 +281,87 @@ $$ f(x) = {latex(expr)} $$
 
 ---
 **2. Theoretical Foundation**
-This transformation follows the fundamental rules of differentiation (Power, Sum, or Transcendental rules).
+This transformation follows the fundamental rules of differentiation including the **Power Rule** ($\frac{{d}}{{dx}}x^n = nx^{{n-1}}$) and **Linearity**.
 
 ---
 **3. Analytical Derivation**
-Applying the operator $\\frac{{d}}{{dx}}$ to each term:
-$$ \\frac{{d}}{{dx}} \\left( {latex(expr)} \\right) $$
+Applying the differentiation operator $\\frac{{d}}{{dx}}$ to the terms:
+$$ \\frac{{d}}{{dx}} \\left[ {latex(expr)} \\right] $$
 
 ---
 **4. Final Analytical Result**
 The resulting derivative is:
-$$ \\mathbf{{\\frac{{df}}{{dx}} = {latex(res)}}} $$
+$$\\boxed{{ \\frac{{df}}{{dx}} = {latex(res)} }}$$
 
 ---
 **5. Mathematical Insight**
-Calculating the derivative allows for the determination of critical points and the overall local behavior of the function.
+The derivative provides the instantaneous rate of change and is critical for determining the critical points (maxima/minima) of the function.
 """
 
 def explain_integral_steps(expr, x, lower=None, upper=None):
     header = get_mit_style_header("Calculus: Integration")
     
-    # Specialized handling for Polynomials (Power Rule + Sum Rule)
-    if expr.is_Add or expr.is_Pow or expr.is_Mul or expr.is_Symbol:
-        # Check if it's a "standard" polynomial in x
-        is_poly = expr.is_polynomial(x)
-        if is_poly:
-            terms = expr.as_ordered_terms()
-            result = integrate(expr, x)
-            
-            # Build analytical derivation steps
-            steps = []
-            for term in terms:
-                term_int = integrate(term, x)
-                steps.append(f"*   $\\int {latex(term)} \\, dx = {latex(term_int)}$ (using the Power Rule $\\int x^n dx = \\frac{{x^{{n+1}}}}{{n+1}}$)")
+    if lower is not None and upper is not None:
+        # Definite Integral General Case
+        total_result = integrate(expr, (x, lower, upper))
+        antiderivative = integrate(expr, x)
+        
+        # Build analytical derivation steps
+        if expr.is_Add or expr.is_Pow or expr.is_Mul or expr.is_Symbol:
+            is_poly = expr.is_polynomial(x)
+            if is_poly:
+                terms = expr.as_ordered_terms()
+                steps = []
+                for term in terms:
+                    term_int = integrate(term, x)
+                    steps.append(f"*   $\\int {latex(term)} \\, dx = {latex(term_int)}$")
+                derivation_text = "Integrating term-by-term:\n" + "\n".join(steps)
+            else:
+                derivation_text = f"The indefinite integral (antiderivative) is $F(x) = {latex(antiderivative)} + C$."
+        else:
+            derivation_text = f"The indefinite integral is $F(x) = {latex(antiderivative)} + C$."
 
-            derivation_text = "\n".join(steps)
-            
-            if lower is not None and upper is not None:
-                # Definite Polynomial
-                total_result = integrate(expr, (x, lower, upper))
-                return header + f"""
+        return header + f"""
 ---
 **1. Problem Statement**
-Compute the definite integral of the polynomial:
-$$ I = \\int_{{{latex(lower)}}}^{{{latex(upper)}}} \\left( {latex(expr)} \\right) \\, dx $$
+Compute the definite integral:
+$$ I = \\int_{{{latex(lower)}}}^{{{latex(upper)}}} \\left( {latex(expr)} \\right) \\differentialD x $$
 
 ---
 **2. Theoretical Foundation**
-We apply the **Linearity of Integration** (Sum Rule) and the **Power Rule**:
-$$ \\int [f(x) + g(x)] \\, dx = \\int f(x) \\, dx + \\int g(x) \\, dx $$
-$$ \\int x^n \\, dx = \\frac{{x^{{n+1}}}}{{n+1}} \\quad (n \\neq -1) $$
-Combined with the **Fundamental Theorem of Calculus (Part II)**.
+We utilize the **Fundamental Theorem of Calculus (Part II)**, which evaluates the accumulated change between boundaries:
+$$ \\int_{{a}}^{{b}} f(x) \\differentialD x = F(b) - F(a) $$
 
 ---
 **3. Analytical Derivation**
-*   **Step 1: Integrate term-by-term**
-{derivation_text}
-*   **Step 2: Sum the results to find antiderivative**
-$F(x) = {latex(result)}$
-*   **Step 3: Evaluate at boundaries**
-$F({latex(upper)}) - F({latex(lower)}) = {latex(result.subs(x, upper))} - {latex(result.subs(x, lower))}$
+*   **Step 1:** Find the antiderivative $F(x) = {latex(antiderivative)}$.
+*   **Step 2:** {derivation_text}
+*   **Step 3:** Evaluate at boundaries: $F({latex(upper)}) - F({latex(lower)})$
+$$ I = \\left[ {latex(antiderivative)} \\right]_{{{latex(lower)}}}^{{{latex(upper)}}} $$
+$$ I = ({latex(antiderivative.subs(x, upper))}) - ({latex(antiderivative.subs(x, lower))}) $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{I = {latex(total_result)}}} $$
+$$\\boxed{{ I = {latex(total_result)} }}$$
+
+---
+**5. Mathematical Insight**
+This definite integral calculates the exact signed area trapped between the curve and the x-axis within the interval $[{latex(lower)}, {latex(upper)}]$.
 """
-            else:
-                # Indefinite Polynomial
-                return header + f"""
+
+    # Indefinite Integral General Case
+    result = integrate(expr, x)
+    
+    # Polynomial specialized handling for indefinite
+    if (expr.is_Add or expr.is_Pow or expr.is_Mul or expr.is_Symbol) and expr.is_polynomial(x):
+        terms = expr.as_ordered_terms()
+        steps = []
+        for term in terms:
+            term_int = integrate(term, x)
+            steps.append(f"*   $\\int {latex(term)} \\, \\differentialD x = {latex(term_int)}$ (using the Power Rule $\\int x^n \\differentialD x = \\frac{{x^{{n+1}}}}{{n+1}}$)")
+        derivation_text = "\n".join(steps)
+        
+        return header + f"""
 ---
 **1. Problem Statement**
 Compute the indefinite integral of the polynomial:
@@ -344,22 +369,24 @@ $$ f(x) = {latex(expr)} $$
 
 ---
 **2. Theoretical Foundation**
-We utilize the **Linearity of Integration** and the **Power Rule**:
-$$ \\int [f(x) + g(x)] \\, dx = \\int f(x) \\, dx + \\int g(x) \\, dx $$
-$$ \\int x^n \\, dx = \\frac{{x^{{n+1}}}}{{n+1}} $$
+We utilize the **Linearity of Integration** and the **Power Rule** for polynomials:
+$$ \\int x^n \\differentialD x = \\frac{{x^{{n+1}}}}{{n+1}} + C \\quad (n \\neq -1) $$
 
 ---
 **3. Analytical Derivation**
-Applying the operator $\\int (\\dots) dx$ to each term:
+Applying the integral operator $\\int (\\dots) \\differentialD x$ term-by-term:
 {derivation_text}
 
 ---
 **4. Final Analytical Result**
 The general antiderivative is:
-$$ \\mathbf{{I = {latex(result)} + C}} $$
+$$\\boxed{{ I = {latex(result)} + C }}$$
+
+---
+**5. Mathematical Insight**
+The result represents the entire family of curves whose derivative is the original function. The constant $C$ accounts for the arbitrary vertical translation of the antiderivative.
 """
 
-    result = integrate(expr, x)
     return header + f"""
 ---
 **1. Problem Statement**
@@ -409,20 +436,20 @@ $$ M = {latex(M)} $$
 
 ---
 **2. Theoretical Foundation**
-The determinant is a scalar value that encodes properties of the linear transformation described by the matrix (e.g., volume scaling, invertibility).
+The determinant is a fundamental scalar attribute of square matrices that characterizes the geometric scaling of the linear transformation.
 
 ---
 **3. Analytical Derivation**
-Applying the Laplace Expansion or Row Reduction method:
+Applying the Laplace expansion or row reduction algorithms to calculate the alternating sum of products:
 $$ \\det(M) = {latex(res)} $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{\\det(M) = {latex(res)}}} $$
+$$\\boxed{{ \\det(M) = {latex(res)} }}$$
 
 ---
 **5. Mathematical Insight**
-If $\\det(M) \\neq 0$, the matrix is non-singular and invertible, representing a transformation that does not collapse space.
+A non-zero determinant ($\\det(M) \\neq 0$) indicates the matrix is non-singular and invertible, preserving the dimensionality of the vector space.
 """
         elif op == "matrix_inv":
             if M.det() == 0:
@@ -436,16 +463,20 @@ $$ M = {latex(M)} $$
 
 ---
 **2. Theoretical Foundation**
-The inverse matrix $M^{{-1}}$ satisfies $M \\cdot M^{{-1}} = I$, where $I$ is the identity matrix.
+The inverse matrix $M^{{-1}}$ is the unique matrix such that $M \\cdot M^{{-1}} = I$, where $I$ is the identity matrix.
 
 ---
 **3. Analytical Derivation**
-Using the Adjugate Matrix method or Gauss-Jordan Elimination:
+Utilizing the Adjugate Matrix method or Gauss-Jordan Elimination:
 $$ M^{{-1}} = \\frac{{1}}{{\\det(M)}} \\text{{adj}}(M) $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{M^{{-1}} = {latex(res)}}} $$
+$$\\boxed{{ M^{{-1}} = {latex(res)} }}$$
+
+---
+**5. Mathematical Insight**
+The inverse represents the transformation that "un-does" the action of $M$, effectively mapping vectors back to their original basis.
 """
     except Exception as e:
         return f"Matrix error: {e}"
@@ -457,25 +488,25 @@ def explain_limit_steps(expr, x, point):
         return header + f"""
 ---
 **1. Problem Statement**
-Evaluate the limit:
-$$ \\lim_{{{latex(x)} \\to {latex(point)}}} {latex(expr)} $$
+Evaluate the limit of the function as it approaches the specified point:
+$$ \\lim_{{{latex(x)} \\to {latex(point)}}} \\left( {latex(expr)} \\right) $$
 
 ---
 **2. Theoretical Foundation**
-Limits explore the behavior of a function as the input approaches a specific value, identifying continuity and asymptotic trends.
+Limits define the foundational behavior of functions near a point, providing the rigorous basis for continuity and derivatives.
 
 ---
 **3. Analytical Derivation**
-Substitution and application of L'Hôpital's rule or algebraic reduction if necessary.
-As $x$ approaches ${latex(point)}$, we analyze $f(x) = {latex(expr)}$.
+As $x$ approaches ${latex(point)}$, we utilize algebraic reduction or L'Hôpital's rule to resolve indeterminate forms:
+$$ \\lim_{{{latex(x)} \\to {latex(point)}}} f(x) = {latex(res)} $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{\\lim_{{{latex(x)} \\to {latex(point)}}} f(x) = {latex(res)}}} $$
+$$\\boxed{{ \\lim_{{{latex(x)} \\to {latex(point)}}} f(x) = {latex(res)} }}$$
 
 ---
 **5. Mathematical Insight**
-If the limit exists and equals $f({latex(point)})$, the function is continuous at that point.
+This result characterizes the asymptotic behavior or local continuity. If the limit matches $f({latex(point)})$, the function is continuous.
 """
     except Exception as e:
         return f"Error calculating limit: {e}"
@@ -492,16 +523,19 @@ $$ S = \\sum_{{{latex(k)}={latex(start)}}}^{{{latex(end)}}} {latex(expr)} $$
 
 ---
 **2. Theoretical Foundation**
-Summations represent the addition of terms in a sequence, often solved via closed-form identities.
+Summation is a linear operator that accumulates terms from a discrete sequence, often simplified via closed-form identities.
 
 ---
 **3. Analytical Derivation**
-Summing terms from $k = {latex(start)}$ to $k = {latex(end)}$ for $f(k) = {latex(expr)}$.
+Iteratively summing terms from $k = {latex(start)}$ to $k = {latex(end)}$ for the expression $f(k) = {latex(expr)}$.
 
 ---
 **4. Final Analytical Result**
-The total sum is:
-$$ \\mathbf{{S = {latex(res)}}} $$
+$$\\boxed{{ S = {latex(res)} }}$$
+
+---
+**5. Mathematical Insight**
+The total sum provides the integrated value of the discrete sequence over the specified range, representing a discrete analog to integration.
 """
     except Exception as e:
         return f"Error calculating summation: {e}"
@@ -548,28 +582,24 @@ def explain_equation_solver_steps(expr_str):
             return header + f"""
 ---
 **1. Problem Statement**
-Given the quadratic equation:
+Determine the roots of the quadratic equation:
 $$ {latex(expr)} = 0 $$
 
 ---
 **2. Theoretical Foundation**
-A quadratic equation in the form $ax^2 + bx + c = 0$ can be solved using the **Quadratic Formula**:
-$$ x = \\frac{{-b \\pm \\sqrt{{b^2 - 4ac}}}}{{2a}} $$
-The term $D = b^2 - 4ac$ is the **discriminant**, which determines the nature of the roots.
+A quadratic equation $ax^{{2}} + bx + c = 0$ is solved via the **Quadratic Formula**, where the roots are determined by the discriminant $D = b^{{2}} - 4ac$.
 
 ---
 **3. Analytical Derivation**
-*   **Step 1:** Identify coefficients: $a = {latex(a)}, b = {latex(b)}, c = {latex(c)}$.
-*   **Step 2:** Calculate the discriminant:
-$$ D = ({latex(b)})^2 - 4({latex(a)})({latex(c)}) = {latex(discriminant)} $$
-*   **Step 3:** Substitute into the Quadratic Formula:
+*   **Step 1:** Coefficients: $a = {latex(a)}, b = {latex(b)}, c = {latex(c)}$.
+*   **Step 2:** Discriminant calculation:
+$$ D = ({latex(b)})^{{2}} - 4({latex(a)})({latex(c)}) = {latex(discriminant)} $$
+*   **Step 3:** Application of the formula:
 $$ x = \\frac{{-{latex(b)} \\pm \\sqrt{{{latex(discriminant)}}}}}{{2({latex(a)})}} $$
-*   **Step 4:** Simplify to find solutions.
 
 ---
 **4. Final Analytical Result**
-The roots are:
-$$ \\mathbf{{x \\in \\{{ {', '.join([latex(s) for s in solutions])} \\}} }} $$
+$$\\boxed{{ x \\in \\{{ {', '.join([latex(s) for s in solutions])} \\}} }}$$
 
 ---
 **5. Mathematical Insight**
@@ -581,26 +611,25 @@ $$ \\mathbf{{x \\in \\{{ {', '.join([latex(s) for s in solutions])} \\}} }} $$
         return header + f"""
 ---
 **1. Problem Statement**
-Find all roots for the equation:
+Find all real/complex roots for the equation:
 $$ {latex(expr)} = 0 $$
 
 ---
 **2. Theoretical Foundation**
-Solving an equation involves finding values of the variable that satisfy the equality, represented as intercepts on a coordinate plane.
+Root finding involves identifying the values of $x$ for which the function vanishes, corresponding to horizontal axis intercepts.
 
 ---
 **3. Analytical Derivation**
-Utilizing algebraic factorization or symbolic solvers to isolate the variable $x$:
+Utilizing symbolic solvers and algebraic manipulation to isolate the variable:
 $$ {latex(expr)} = 0 $$
 
 ---
 **4. Final Analytical Result**
-The solution set is:
-$$ \\mathbf{{x \\in \\{{ {', '.join([latex(s) for s in solutions])} \\}} }} $$
+$$\\boxed{{ x \\in \\{{ {', '.join([latex(s) for s in solutions])} \\}} }}$$
 
 ---
 **5. Mathematical Insight**
-The solutions represent the points where the function $f(x) = {latex(expr)}$ intersects the x-axis.
+The solution set defines the zero-crossings of the function $f(x) = {latex(expr)}$, where the output value is exactly neutralized.
 """
     except Exception as e:
         logger.error(f"Equation solver error: {e}")
@@ -620,21 +649,25 @@ def solve_discrete_math(query: str) -> str | None:
             return header + f"""
 ---
 **1. Problem Statement**
-Determine the closed-form solution for the linear homogeneous recurrence relation:
+Determine the closed-form solution for the linear recurrence:
 $$ {var_name}_n = {a_val}{var_name}_{{n-1}} + {b_val}{var_name}_{{n-2}} $$
 
 ---
 **2. Theoretical Foundation**
-For a relation $a_n = c_1 a_{{n-1}} + c_2 a_{{n-2}}$, we assume a solution of the form $a_n = r^n$.
+We utilize the **Method of Characteristic Equations**, assuming a solution of power form $a_n = r^n$.
 
 ---
 **3. Analytical Derivation**
-*   **Step 1:** Construct characteristic equation: $r^2 - {a_val}r - {b_val} = 0$
-*   **Step 2:** Roots: $r_1 = {latex(r1)}, r_2 = {latex(r2)}$
+*   **Step 1:** Formulate characteristic equation: $r^{{2}} - {a_val}r - {b_val} = 0$.
+*   **Step 2:** Calculate roots $r_1, r_2$: $r_1 = {latex(r1)}, r_2 = {latex(r2)}$.
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{{var_name}_n = c_1 \\left({latex(r1)}\\right)^n + c_2 \\left({latex(r2)}\\right)^n}} $$
+$$\\boxed{{ {var_name}_n = c_1 \\left({latex(r1)}\\right)^n + c_2 \\left({latex(r2)}\\right)^n }}$$
+
+---
+**5. Mathematical Insight**
+The general solution is a linear combination of the characteristic solutions, where constants $c_1, c_2$ are typically determined by initial seed values $a_0, a_1$.
 """
     return None
 
@@ -645,6 +678,10 @@ def solve_math_query(query: str) -> str | None:
         if discrete_res: return discrete_res
 
         # 2. Deterministic check (Equation, Calculus, Discrete, Matrix, Simplify)
+        # Handle specific LaTeX artifacts before stripping text/backslashes
+        query = query.replace(r"\textasciicircum", "^")
+        query = query.replace(r"\textasciitilde", "~")
+        
         query_det = re.sub(r"\\text\{(.*?)\}", r"\1", query)
         query_det = query_det.replace("\\", " ").lower()
         
@@ -694,9 +731,10 @@ def solve_math_query(query: str) -> str | None:
 
         # 2. Limits
         if is_limit:
-            match = re.search(r"limit\s+of\s+(.*?)\s+as\s+([a-z])\s+(?:approaches|to|->)\s+(\d+|inf|oo)", query_det)
+            match = re.search(r"limit\s+of\s+(.*?)\s+as\s+([a-z])\s+(?:approaches|to|->)\s+(\d+|inf|oo|infinity)", query_det)
             if match:
                 expr_str, var, point = match.groups()
+                if point == "infinity": point = "oo"
                 return explain_limit_steps(safe_parse(expr_str), symbols(var), safe_parse(point))
 
         # 3. Matrix Operations
@@ -716,6 +754,9 @@ def solve_math_query(query: str) -> str | None:
         if is_diff:
             match = re.search(r"(?:derivative of|derive|d/dx|differentiation of)\s+(.*)", query_det)
             expr_str = match.group(1) if match else query_det.replace("derivative", "").replace("derive", "").replace("of", "").strip()
+            # Clean up function definitions like f(x)= or y=
+            expr_str = re.sub(r"\b[a-z]\(x\)\s*=\s*", "", expr_str) # f(x)=
+            expr_str = re.sub(r"\b[y]\s*=\s*", "", expr_str)      # y=
             return explain_derivative_steps(safe_parse(expr_str), symbols('x'))
 
         # 6. Integration
@@ -787,15 +828,24 @@ def explain_math_query_by_op(op: str, expr_str: str, var_symbol=None, intent=Non
         return header + f"""
 ---
 **1. Problem Statement**
-Simplify: $$ {latex(safe_parse(expr_str))} $$
+Simplify the given mathematical expression:
+$$ {latex(safe_parse(expr_str))} $$
 
 ---
 **2. Theoretical Foundation**
-Combining like terms and applying identities.
+Simplification involves the systematic reduction of terms via structural identities, factoring, and combining like terms.
+
+---
+**3. Analytical Derivation**
+Applying symbolic simplification algorithms to identify common factors and consolidate terms.
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{{latex(result)}}} $$
+$$\\boxed{{ {latex(result)} }}$$
+
+---
+**5. Mathematical Insight**
+Reducing the complexity of an expression facilitates easier analytical manipulation and reveals the underlying structure of the mathematical object.
 """
     return None
 def explain_ode_steps(ode_str, func_var='y', indep_var='x'):
@@ -821,8 +871,8 @@ def explain_ode_steps(ode_str, func_var='y', indep_var='x'):
         else:
             ode_expr_str = ode_str.replace("y", "y(x)")
         
-        # Parse as equation
-        # Define a safe global/local dict for eval
+        # Parse as equation using parse_expr for safety and implicit multiplication
+        # Define a safe global/local dict for parse_expr
         eval_globals = {
             "x": x, "y": y, "diff": diff, "sin": sin, "cos": cos, "exp": exp,
             "Function": Function, "Eq": Eq, "Derivative": Derivative
@@ -830,11 +880,11 @@ def explain_ode_steps(ode_str, func_var='y', indep_var='x'):
         
         if "=" in ode_expr_str:
             lhs_str, rhs_str = ode_expr_str.split("=")
-            lhs = eval(lhs_str.strip(), eval_globals)
-            rhs = eval(rhs_str.strip(), eval_globals)
+            lhs = parse_expr(lhs_str.strip(), local_dict=eval_globals, transformations=MATH_TRANSFORMATIONS)
+            rhs = parse_expr(rhs_str.strip(), local_dict=eval_globals, transformations=MATH_TRANSFORMATIONS)
             ode_expr = Eq(lhs, rhs)
         else:
-            ode_expr = eval(ode_expr_str, eval_globals)
+            ode_expr = parse_expr(ode_expr_str, local_dict=eval_globals, transformations=MATH_TRANSFORMATIONS)
         
         # Solve the ODE
         solution = dsolve(ode_expr, y(x))
@@ -842,24 +892,25 @@ def explain_ode_steps(ode_str, func_var='y', indep_var='x'):
         result_str = f"""
 ---
 **1. Problem Statement**
-Solve the ordinary differential equation:
+Find the general solution for the ODE:
 $$ {latex(ode_expr)} $$
 
 ---
 **2. Theoretical Foundation**
-We apply standard ODE solving techniques (separation of variables, integrating factors, or characteristic equations depending on the type).
+Solving ordinary differential equations requires identifying the equation's order and linearity to apply appropriate integration methods.
 
 ---
 **3. Analytical Derivation**
-Using SymPy's `dsolve` function, we obtain the general solution.
+Applying the `dsolve` operator to find the family of functions whose derivatives satisfy the local relation:
+$$ y(x) = {latex(solution.rhs)} $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{{latex(solution)}}} $$
+$$\\boxed{{ {latex(solution)} }}$$
 
 ---
 **5. Mathematical Insight**
-The solution represents the family of curves satisfying the differential equation. Constants (C1, C2, etc.) are determined by initial conditions.
+The solution represents a family of integral curves. Specific trajectories can be isolated if initial value conditions (IVP) are provided.
 """
         return header + result_str
     except Exception as e:
@@ -891,26 +942,26 @@ def explain_partial_derivative_steps(expr, var_list):
         result_str = f"""
 ---
 **1. Problem Statement**
-Compute the partial derivative:
+Compute the partial derivative of the multivariable function:
 $$ f = {latex(expr)} $$
 $$ {notation} $$
 
 ---
 **2. Theoretical Foundation**
-Partial derivatives measure the rate of change of a multivariable function with respect to one variable while holding others constant.
+Partial derivatives quantify the sensitivity of a function to change in a specific dimension while treating orthogonal variables as static.
 
 ---
 **3. Analytical Derivation**
-Applying the partial derivative operator:
+Iteratively applying the differentiation operator with respect to the coordinate variables:
 $$ {notation} = {latex(result)} $$
 
 ---
 **4. Final Analytical Result**
-$$ \\mathbf{{{notation} = {latex(result)}}} $$
+$$\\boxed{{ {notation} = {latex(result)} }}$$
 
 ---
 **5. Mathematical Insight**
-This partial derivative shows how the function changes in the direction of {', '.join(var_list)}.
+This result provides the local gradient component in the direction of the specified variables, essential for multivariate optimization.
 """
         return header + result_str
     except Exception as e:

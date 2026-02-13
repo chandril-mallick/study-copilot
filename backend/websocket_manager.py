@@ -54,22 +54,38 @@ async def get_websocket_user(websocket: WebSocket) -> User:
     # Get token from query params
     token = websocket.query_params.get("token")
     if not token:
+        print("WS Auth: Missing authentication token in query params")
         await websocket.close(code=1008, reason="Missing authentication token")
         return None
     
     # Validate token (simplified - in production, use proper JWT validation)
     from auth.jwt_handler import decode_token
-    payload = decode_token(token)
-    if not payload:
-        await websocket.close(code=1008, reason="Invalid token")
+    try:
+        payload = decode_token(token)
+        if not payload:
+            print(f"WS Auth: Invalid token for connection attempt")
+            await websocket.close(code=1008, reason="Invalid token")
+            return None
+    except Exception as e:
+        print(f"WS Auth: Error decoding token: {e}")
+        await websocket.close(code=1008, reason="Token decode error")
         return None
     
     # Get user from database
     from database.connection import SessionLocal
+    from models.user import User
+    
     db = SessionLocal()
-    user = db.query(User).filter(User.id == payload.get("sub")).first()
+    user_id = payload.get("sub")
+    user = db.query(User).filter(User.id == user_id).first()
     db.close()
     
+    if not user:
+        print(f"WS Auth: User {user_id} not found in database")
+        await websocket.close(code=1008, reason="User not found")
+        return None
+    
+    print(f"WS Auth: User {user.name} (ID: {user.id}) authenticated successfully")
     return user
 
 async def handle_websocket_message(websocket: WebSocket, user: User, data: dict):

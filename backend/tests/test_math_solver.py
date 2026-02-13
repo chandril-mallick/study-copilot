@@ -31,7 +31,7 @@ class TestMathSolver(unittest.TestCase):
     def test_integral_basic(self):
         query = "integral of x**3"
         result = solve_math_query(query)
-        self.assertIn("Antiderivative", result)
+        self.assertIn("antiderivative", result.lower())
         self.assertIn("x^{4}", result)
 
     def test_discrete_math_recurrence(self):
@@ -39,12 +39,12 @@ class TestMathSolver(unittest.TestCase):
         result = solve_math_query(query)
         self.assertIn("Recurrence Relations", result)
         self.assertIn("Analytical Derivation", result)
-        self.assertIn("Characteristic Equation", result)
+        self.assertIn("characteristic equation", result.lower())
 
     def test_simplify(self):
         query = "simplify (x-1)*(x+1)"
         result = solve_math_query(query)
-        self.assertIn("algebraic transformations", result)
+        self.assertIn("Combining like terms", result)
         self.assertIn("x^{2}", result)
         self.assertIn("1", result)
 
