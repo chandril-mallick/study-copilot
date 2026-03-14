@@ -17,17 +17,17 @@ By leveraging **Retrieval-Augmented Generation (RAG)** on the edge, Dabba provid
 
 ## Multi-Role Ecosystem & Features
 
-### 🎓 Student Features
+###  Student Features
 * **AI Tutor Chat & Q&A:** Context-aware natural language tutoring powered by local LLMs via WebSockets.
 * **Smart Study & Lesson Planner:** Automated dynamic curriculum and schedule generation.
 * **Flashcards & Quizzes:** Algorithmic creation with instant feedback.
 * **Note Summarizer:** Abstractive summarization designed specifically for long-form academic content.
 
-### 👨‍🏫 Faculty & Verifier Features
+###  Faculty & Verifier Features
 * **AI Auto-Grader:** Automated, consistent, and fast grading assistance.
 * **Question Bank & Lesson Planning:** Tools to streamline course material creation.
 
-### ⚙️ Admin & Management Features
+###  Admin & Management Features
 * **Role Insights:** Dashboards for tracking system usage and performance.
 * **Workflow Automation:** Streamlined institutional processes.
 
