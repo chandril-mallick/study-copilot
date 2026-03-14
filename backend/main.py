@@ -31,6 +31,7 @@ from routes.student.revision import router as student_revision_router
 from routes.student.study_groups import router as student_study_groups_router
 from routes.student.feedback import router as student_feedback_router
 from routes.student.jobs import router as student_jobs_router
+from routes.student.applications import router as student_applications_router
 
 # Faculty routers
 from routes.faculty.faculty_apis import router as faculty_router
@@ -239,6 +240,7 @@ app.include_router(student_assignment_router)
 app.include_router(student_revision_router)
 app.include_router(student_study_groups_router)
 app.include_router(student_feedback_router)
+app.include_router(student_applications_router)
 app.include_router(student_jobs_router, prefix="/api/student/jobs", tags=["Student Jobs"])
 
 # Faculty routes

@@ -18,6 +18,7 @@ import { cn } from "../lib/utils";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
 import MathKeyboard from "./MathKeyboard";
+import DabbaBotLogo from "./DabbaBotLogo";
 
 // Define Flat UI Colors - Mimicking Google/Gemini Aesthetic
 const GEMINI_BLUE = "text-blue-600";
@@ -31,18 +32,31 @@ const Chat = ({
   isLoading,
 }) => {
   const { useContext, setUseContext, mathMode, setMathMode } = useChatStore();
-  const messagesEndRef = useRef(null);
   
   // Voice Mode State
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const messagesEndRef = useRef(null);
+  const scrollAreaRef = useRef(null);
+  const textAreaRef = useRef(null);
   const recognitionRef = useRef(null);
-
+  
+  // Robust auto-scroll logic
   useEffect(() => {
-    // Scroll to bottom when messages change
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const scrollContainer = scrollAreaRef.current;
+    if (!scrollContainer) return;
+
+    const isNearBottom = 
+      scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight < 150;
+
+    if (isNearBottom || messages.length > 0 && messages[messages.length - 1].type === 'user') {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages, isLoading]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -118,7 +132,7 @@ const Chat = ({
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text("Chat Conversation - DABBA AI Study Assistant", 14, 20);
+    doc.text("Chat Conversation - DABBA AI", 14, 20);
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 30);
@@ -164,13 +178,12 @@ const Chat = ({
   };
 
   return (
-    <div className="relative flex flex-col h-full bg-[#0f1117] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.2),rgba(255,255,255,0))]"> 
-      
+    <div className="absolute inset-0 flex flex-col w-full h-full bg-[#0A0A0A] overflow-hidden">
       {/* Header (STICKY) */}
       <div 
         className={cn(
-          "sticky top-0 w-full p-4 border-b border-white/5 backdrop-blur-xl bg-[#0f1117]/70", 
-          "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 z-20 h-auto sm:h-20 transition-all duration-300"
+          "flex-shrink-0 sticky top-0 w-full p-3 sm:p-4 border-b border-white/5 bg-[#0f1117]/95 backdrop-blur-md", 
+          "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 z-20 h-auto sm:h-16 transition-all duration-300"
         )}
       >
         <div className="flex items-center gap-3">
@@ -181,18 +194,18 @@ const Chat = ({
                 ? "bg-gradient-to-br from-red-500 to-pink-500 animate-pulse" 
                 : "bg-gradient-to-br from-purple-500 to-blue-500"
             )}>
-              <Bot className="h-6 w-6 text-white" />
+              <DabbaBotLogo iconOnly className="scale-75" />
             </div>
             {isSpeaking && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-black"></div>
             )}
           </div>
           <div>
             <h3 className="text-white font-bold text-lg flex items-center gap-2">
-               DABBA AI Study Assistant
+               DABBA AI
               <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
             </h3>
-            <p className="text-gray-400 text-xs font-medium">Powered by Advanced AI</p>
+            <p className="text-gray-400 text-xs font-medium">Brainware University's own AI</p>
           </div>
         </div>
 
@@ -221,59 +234,100 @@ const Chat = ({
         </div>
       </div>
 
-      {/* Chat Area (SCROLLABLE) */}
+      {/* Chat Area (SCROLLABLE - fills space, only this scrolls like ChatGPT/Cursor) */}
       <div 
-        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 relative z-10"
+        ref={scrollAreaRef}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 py-4 sm:py-6 relative z-10 scrollbar-thin"
       >
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8 animate-fade-in">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center mb-6 shadow-2xl">
-              <Bot className="h-10 w-10 text-white" />
+        <div className={cn("max-w-3xl mx-auto", messages.length === 0 ? "min-h-full flex flex-col" : "space-y-6")}>
+          {messages.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center min-h-[60vh] px-2 sm:px-0 animate-fade-in">
+              <div className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-white/5/80 bg-[#020617]/80 backdrop-blur-2xl shadow-[0_24px_80px_rgba(15,23,42,0.95)] overflow-hidden">
+                {/* Soft radial glow background */}
+                <div className="pointer-events-none absolute -inset-32 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.22),transparent_60%),radial-gradient(circle_at_bottom,_rgba(16,185,129,0.18),transparent_55%)] opacity-80" />
+
+                <div className="relative z-10 flex flex-col items-center text-center px-6 py-8 sm:px-10 sm:py-10 gap-6">
+                  <div className="relative mb-2">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#00FF88]/20 via-[#00D9FF]/10 to-purple-500/20 blur-3xl rounded-full" />
+                    <DabbaBotLogo
+                      iconOnly
+                      className="scale-[1.8] relative z-10 drop-shadow-[0_0_24px_rgba(0,255,136,0.45)]"
+                    />
+                  </div>
+
+                  <div className="space-y-3 max-w-xl">
+                    <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight bg-gradient-to-r from-[#00F5A0] via-[#00D9FF] to-[#A855F7] bg-clip-text text-transparent">
+                      How can I help with your studies today?
+                    </h3>
+                    <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+                      Ask a question, paste an assignment, or describe what you are working on and DABBA AI will turn it into clear, step‑by‑step guidance.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 grid w-full gap-3 sm:gap-4 sm:grid-cols-3">
+                    <button
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() =>
+                        setInputMessage("Explain Quantum Mechanics like I'm 10 years old ")
+                      }
+                      className="group relative flex flex-col items-start text-left w-full rounded-2xl border border-white/10 bg-white/5/80 bg-black/40 px-4 py-3 sm:px-5 sm:py-4 hover:-translate-y-0.5 hover:border-[#00D9FF]/60 hover:bg-[#020617]/90 transition-all duration-300 shadow-[0_10px_35px_rgba(15,23,42,0.7)]"
+                    >
+                      <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-cyan-300/80 mb-1">
+                        Concept clarity
+                      </span>
+                      <p className="text-sm sm:text-[15px] text-white">
+                         Explain Quantum Mechanics simply
+                      </p>
+                    </button>
+
+                    <button
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() =>
+                        setInputMessage("Create a 5-day study plan for my upcoming exam on: ")
+                      }
+                      className="group relative flex flex-col items-start text-left w-full rounded-2xl border border-white/10 bg-white/5/80 bg-black/40 px-4 py-3 sm:px-5 sm:py-4 hover:-translate-y-0.5 hover:border-emerald-400/60 hover:bg-[#020617]/90 transition-all duration-300 shadow-[0_10px_35px_rgba(15,23,42,0.7)]"
+                    >
+                      <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-emerald-300/80 mb-1">
+                        Study planning
+                      </span>
+                      <p className="text-sm sm:text-[15px] text-white">
+                         Generate a 5-day study plan
+                      </p>
+                    </button>
+
+                    <button
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() =>
+                        setInputMessage("Summarize this research paper and highlight key findings: ")
+                      }
+                      className="group relative flex flex-col items-start text-left w-full rounded-2xl border border-white/10 bg-white/5/80 bg-black/40 px-4 py-3 sm:px-5 sm:py-4 hover:-translate-y-0.5 hover:border-purple-400/70 hover:bg-[#020617]/90 transition-all duration-300 shadow-[0_10px_35px_rgba(15,23,42,0.7)]"
+                    >
+                      <span className="text-[11px] font-medium uppercase tracking-[0.22em] text-purple-300/80 mb-1">
+                        Research help
+                      </span>
+                      <p className="text-sm sm:text-[15px] text-white">
+                         Summarize a research paper
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-white mb-3">
-              Welcome to DABBA AI! 👋
-            </h3>
-            <p className="text-gray-300 max-w-md mx-auto leading-relaxed">
-              I'm your intelligent study assistant. Ask me anything about your courses, get explanations, or upload documents for analysis.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2 justify-center">
-              <button 
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setInputMessage("Explain a concept: ")}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm text-white transition-all"
-              >
-                Explain a concept
-              </button>
-              <button 
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setInputMessage("Help with homework: ")}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm text-white transition-all"
-              >
-                Help with homework
-              </button>
-              <button 
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setInputMessage("Study tips for ")}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm text-white transition-all"
-              >
-                Study tips
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <MessageBubble key={index} message={message} index={index} />
-            ))}
-            {isLoading && <TypingIndicator />}
-          </>
-        )}
-        <div ref={messagesEndRef} />
+          ) : (
+            <>
+              {messages.map((message, index) => (
+                <MessageBubble key={index} message={message} index={index} />
+              ))}
+              {isLoading && <TypingIndicator />}
+            </>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input Area (STICKY) */}
+      {/* Input Area (FIXED AT BOTTOM - never scrolls) */}
       <div 
-        className="sticky bottom-0 w-full p-4 border-t border-white/5 backdrop-blur-xl bg-[#0f1117]/70 z-20 h-auto min-h-[7rem] transition-all duration-300"
+        className="flex-shrink-0 w-full p-4 border-t border-white/5 bg-[#0f1117]/95 backdrop-blur-xl z-20 transition-all duration-300"
       >
         <form onSubmit={handleSendMessage} className="relative max-w-4xl mx-auto flex items-end gap-3">
           
@@ -295,7 +349,7 @@ const Chat = ({
                     "w-full resize-none pl-5 pr-24 py-4 rounded-2xl border text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-sm sm:text-base shadow-lg",
                     isListening 
                         ? "border-red-500 focus:border-red-500 focus:ring-red-500/50 bg-red-500/10" 
-                        : "border-white/20 focus:border-purple-500 focus:ring-purple-500/50 bg-white/5"
+                        : "border-white/20 focus:border-neon-blue focus:ring-[#00D9FF]/30 bg-white/5"
                 )}
                 onInput={(e) => {
                     e.target.style.height = 'auto';
@@ -318,8 +372,8 @@ const Chat = ({
                   className={cn(
                       "p-2 rounded-full transition-all duration-300",
                       mathMode 
-                          ? "text-purple-400 bg-purple-500/20" 
-                          : "text-gray-400 hover:text-purple-400 hover:bg-purple-500/20"
+                          ? "text-[#00D9FF] bg-[#00D9FF]/20" 
+                          : "text-gray-400 hover:text-[#00D9FF] hover:bg-[#00D9FF]/20"
                   )}
                   title={mathMode ? "Disable Math Mode" : "Enable Math Mode"}
               >
@@ -335,7 +389,7 @@ const Chat = ({
                       "p-2 rounded-full transition-all duration-300",
                       isListening 
                           ? "text-red-400 bg-red-500/20 animate-pulse" 
-                          : "text-gray-400 hover:text-purple-400 hover:bg-purple-500/20"
+                          : "text-gray-400 hover:text-[#00D9FF] hover:bg-[#00D9FF]/20"
                   )}
                   title={isListening ? "Stop Listening" : "Start Voice Input"}
               >
@@ -349,11 +403,11 @@ const Chat = ({
             type="submit"
             onMouseDown={(e) => e.preventDefault()}
             disabled={!inputMessage.trim() || isLoading}
-            className="p-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-purple-500/50 disabled:shadow-none"
+            className="p-3.5 rounded-full bg-[#00D9FF] text-black hover:bg-[#33E0FF] disabled:bg-gray-700 disabled:opacity-50 transition-all duration-300 shadow-[0_0_12px_rgba(0,217,255,0.4)]"
             title="Send Message"
           >
             {isLoading ? (
-              <div className="h-6 w-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <Send className="h-6 w-6" />
             )}

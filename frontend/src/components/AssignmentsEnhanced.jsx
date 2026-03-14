@@ -71,15 +71,20 @@ const AssignmentsEnhanced = ({ viewMode = 'student', onToast }) => {
     setLoading(true);
     setError(null);
     try {
-      // Both students and faculty can use the same endpoint now
-      const data = await studentService.getAssignments();
+      let data;
+      if (viewMode === 'teacher') {
+        // Teachers use facultyService to get their own assignments
+        const response = await facultyService.getAssignments();
+        data = response.assignments || [];
+      } else {
+        // Students use studentService to get their assigned work
+        data = await studentService.getAssignments();
+      }
       setAssignments(data || []);
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
       showErrorToast(err, setToast);
-      
-      // Log for debugging
       console.error('Error fetching assignments:', {
         error: err,
         response: err.response,

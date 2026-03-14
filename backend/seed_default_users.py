@@ -4,11 +4,11 @@ import sys
 BASE_URL = "http://localhost:8000"
 
 USERS = [
-    {"role": "student", "email": "student@brainware.edu", "password": "student123", "name": "Student Demo"},
-    {"role": "faculty", "email": "faculty@brainware.edu", "password": "faculty123", "name": "Faculty Demo"},
-    {"role": "verifier", "email": "verifier@brainware.edu", "password": "verifier123", "name": "Verifier Demo"},
-    {"role": "admin", "email": "admin@brainware.edu", "password": "admin123", "name": "Admin Demo"},
-    {"role": "management", "email": "management@brainware.edu", "password": "management123", "name": "Management Demo"},
+    {"role": "student", "email": "student@dababot.ai", "password": "password123", "name": "Student Demo"},
+    {"role": "faculty", "email": "faculty@dababot.ai", "password": "password123", "name": "Faculty Demo"},
+    {"role": "verifier", "email": "verifier@dababot.ai", "password": "password123", "name": "Verifier Demo"},
+    {"role": "admin", "email": "admin@dababot.ai", "password": "password123", "name": "Admin Demo"},
+    {"role": "management", "email": "management@dababot.ai", "password": "password123", "name": "Management Demo"},
 ]
 
 def seed():

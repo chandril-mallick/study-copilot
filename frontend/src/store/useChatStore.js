@@ -10,6 +10,10 @@ const useChatStore = create((set, get) => ({
   isLoading: false,
   useContext: false,
   mathMode: false,
+  showBackground: true,
+
+  // Actions for background management
+  setShowBackground: (val) => set({ showBackground: val }),
 
   // Initialize sessions and current session
   init: () => {

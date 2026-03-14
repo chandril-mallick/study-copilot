@@ -22,6 +22,12 @@ const StudentDashboard = ({ userName = "Student" }) => {
     return "Good Evening";
   };
 
+  const stats = [
+    { label: 'Courses Enrolled', value: '6', icon: BookOpen, color: '#00D9FF', bg: 'rgba(0,217,255,0.1)' },
+    { label: 'Assignments Done', value: '12/15', icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
+    { label: 'Study Streak', value: '7 days 🔥', icon: TrendingUp, color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+    { label: 'AI Sessions', value: '23', icon: Brain, color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
+  ];
   const subjects = [
     { name: "Mathematics", progress: 75, color: "neon-blue" },
     { name: "Computer Science", progress: 88, color: "emerald-DEFAULT" },
@@ -58,6 +64,55 @@ const StudentDashboard = ({ userName = "Student" }) => {
         <p className="text-sm sm:text-base text-gray-400">
           Here's your personalized learning overview for this week
         </p>
+      </div>
+
+      {/* KPI Stats Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="glass-card rounded-card-lg p-4 flex items-center gap-3 hover:scale-[1.02] transition-transform">
+              <div className="p-2.5 rounded-xl flex-shrink-0" style={{ background: stat.bg }}>
+                <Icon className="h-5 w-5" style={{ color: stat.color }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-white leading-tight truncate">{stat.value}</p>
+                <p className="text-[11px] text-gray-400 leading-tight">{stat.label}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Welcome CTA Banner */}
+      <div className="glass-card rounded-card-lg p-5 bg-gradient-to-r from-[#00D9FF]/5 to-[#10B981]/5 border border-[#00D9FF]/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-heading font-semibold text-white flex items-center gap-2">
+              <Brain className="h-4 w-4 text-neon-blue" />
+              Quick Actions
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">Jump right in with your AI-powered tools</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => window.location.hash = 'ai-tutor'}
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#00D9FF]/15 text-[#00D9FF] border border-[#00D9FF]/30 hover:bg-[#00D9FF]/25 transition-all flex items-center gap-1.5"
+            >
+              <Brain className="h-3.5 w-3.5" /> Ask Priya AI
+            </button>
+            <button
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 hover:bg-[#10B981]/25 transition-all flex items-center gap-1.5"
+            >
+              <BookOpen className="h-3.5 w-3.5" /> Study Tools
+            </button>
+            <button
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-1.5"
+            >
+              <Target className="h-3.5 w-3.5" /> View Goals
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Weekly Learning Path */}

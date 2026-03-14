@@ -59,7 +59,22 @@ const AIPolicyGenerator = () => {
     const splitBody = doc.splitTextToSize(generatedContent.body, pageWidth);
 
     doc.setFontSize(12);
-    doc.text(splitBody, 10, 40, { maxWidth: pageWidth });
+    let currentY = 50;
+
+    if (selectedTemplate?.id === "notice") {
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("NOTICE", 105, 42, { align: "center" });
+        
+        doc.setFontSize(10);
+        doc.setFont("times", "normal");
+        doc.text("Ref No: BWU/NOT/2026/AI-GEN", 10, 30);
+        
+        currentY = 60; // Push body down for notices
+    }
+
+    doc.setFontSize(12);
+    doc.text(splitBody, 10, currentY, { maxWidth: pageWidth });
 
     // Signature
     doc.line(140, 270, 190, 270);
@@ -92,6 +107,12 @@ const AIPolicyGenerator = () => {
       label: "Compliance Draft",
       icon: ShieldCheck,
       color: "bg-emerald-500/10 text-emerald-600"
+    },
+    {
+      id: "notice",
+      label: "Official Institution Notice",
+      icon: FileText,
+      color: "bg-orange-500/10 text-orange-600"
     }
   ];
 
@@ -253,9 +274,16 @@ const AIPolicyGenerator = () => {
               </div>
 
               <div className="p-8 overflow-y-auto font-serif whitespace-pre-line leading-7 text-[15px] opacity-100 text-gray-900">
-                <h1 className="text-2xl font-bold text-center mb-8 uppercase underline">
+                <h1 className="text-2xl font-bold text-center mb-2 uppercase underline">
                   {generatedContent.title}
                 </h1>
+
+                {selectedTemplate?.id === "notice" && (
+                  <div className="text-center mb-8">
+                    <div className="text-xs text-gray-500 mb-2 font-sans text-left">Ref No: BWU/NOT/2026/AI-GEN</div>
+                    <div className="text-xl font-bold font-sans tracking-widest border-y border-gray-200 py-1">NOTICE</div>
+                  </div>
+                )}
 
                 {generatedContent.body}
 

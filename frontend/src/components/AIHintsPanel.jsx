@@ -50,20 +50,21 @@ const AIHintsPanel = ({ assignmentId, question, context, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-      <div className="glass-card rounded-card-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-fade-in">
+    <div className="fixed inset-0 bg-[#0A0A0A]/80 backdrop-blur-xl z-[70] flex items-center justify-center p-4 animate-fade-in">
+      <div className="glass-card rounded-3xl p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto animate-slide-up border-white/10 shadow-2xl relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500" />
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-card bg-neon-blue/20">
-              <Sparkles className="h-5 w-5 text-neon-blue" />
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-indigo-500/20 neon-glow">
+              <Sparkles className="h-6 w-6 text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-lg font-heading font-semibold text-white">
-                AI Hints Assistant
+              <h3 className="text-2xl font-heading font-bold text-white tracking-tight">
+                AI ThinkPad Hints
               </h3>
-              <p className="text-sm text-gray-400">
-                Get plagiarism-safe guidance (not direct answers)
+              <p className="text-sm text-indigo-300/60 font-medium">
+                Plagiarism-safe conceptual guidance
               </p>
             </div>
           </div>
@@ -121,23 +122,21 @@ const AIHintsPanel = ({ assignmentId, question, context, onClose }) => {
             onClick={fetchHints}
             disabled={isLoading || !question.trim()}
             className={cn(
-              "w-full py-3 rounded-card font-medium",
-              "bg-gradient-to-r from-neon-blue to-emerald-DEFAULT",
-              "text-white hover:shadow-neon",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "transition-all duration-200",
-              "flex items-center justify-center gap-2"
+              "w-full py-4 rounded-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600",
+              "text-white hover:shadow-neon transition-all duration-300",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale",
+              "flex items-center justify-center gap-3 text-lg"
             )}
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Getting hints...</span>
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>Synthesizing logic...</span>
               </>
             ) : (
               <>
-                <Lightbulb className="h-5 w-5" />
-                <span>Get AI Hints</span>
+                <Lightbulb className="h-6 w-6" />
+                <span>Generate Strategy Guide</span>
               </>
             )}
           </button>
@@ -154,13 +153,18 @@ const AIHintsPanel = ({ assignmentId, question, context, onClose }) => {
 
         {/* Hints Display */}
         {hints && !isLoading && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-card bg-emerald-DEFAULT/10 border border-emerald-DEFAULT/20">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="h-5 w-5 text-emerald-DEFAULT flex-shrink-0 mt-0.5" />
+          <div className="space-y-6 animate-fade-in">
+            <div className="p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 shadow-inner">
+              <div className="flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-indigo-500/20 mt-1">
+                  <Lightbulb className="h-5 w-5 text-indigo-400 flex-shrink-0" />
+                </div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-white mb-2">AI-Generated Hints</h4>
-                  <div className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  <h4 className="font-bold text-white mb-3 flex items-center gap-2">
+                    Conceptual Insights
+                    <Badge className="bg-indigo-500/20 text-indigo-300 text-[10px] py-0 border-none">AI Generated</Badge>
+                  </h4>
+                  <div className="text-base text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {getProgressiveHint()}
                   </div>
                 </div>
@@ -201,18 +205,18 @@ const AIHintsPanel = ({ assignmentId, question, context, onClose }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-4 pt-4">
               <button
                 onClick={fetchHints}
-                className="flex-1 py-2 rounded-card bg-charcoal-light/30 hover:bg-charcoal-light/50 text-white text-sm font-medium transition-colors"
+                className="flex-1 py-3 rounded-xl bg-gray-800/50 hover:bg-gray-800 text-white text-sm font-bold transition-all border border-gray-700 hover:border-indigo-500/50"
               >
-                Get More Hints
+                Regenerate
               </button>
               <button
                 onClick={onClose}
-                className="flex-1 py-2 rounded-card bg-neon-blue hover:bg-neon-blue-dark text-white text-sm font-medium transition-colors"
+                className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-all shadow-lg hover:shadow-indigo-500/20"
               >
-                Close
+                Got it, thanks!
               </button>
             </div>
           </div>

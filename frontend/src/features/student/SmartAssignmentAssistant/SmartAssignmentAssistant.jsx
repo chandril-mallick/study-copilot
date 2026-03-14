@@ -28,6 +28,7 @@ import { studentService } from '../../../services/studentService';
 import { handleApiError } from '../../../utils/errorHandler';
 import Toast from '../../../components/Toast';
 import AIHintsPanel from '../../../components/AIHintsPanel';
+import { cn } from '../../../lib/utils';
 
 const SmartAssignmentAssistant = () => {
   const [assignments, setAssignments] = useState([]);
@@ -200,102 +201,157 @@ const SmartAssignmentAssistant = () => {
       : "No deadline";
 
   return (
-    <div className="h-full flex flex-col lg:flex-row gap-6 p-6 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="h-full flex flex-col lg:flex-row gap-6 p-6 bg-[#0A0A0A] overflow-hidden animate-fade-in text-white/90">
 
       {/* LEFT: ASSIGNMENT */}
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-white">
-            <BookOpen className="w-6 h-6 text-indigo-600" />
-            {selectedAssignment.title}
-          </h2>
-          <div className="flex gap-2 mt-2">
-            <Badge className="bg-indigo-500/10 text-indigo-600 border-indigo-300/30">
-              {selectedAssignment.subject}
-            </Badge>
-            <Badge className="bg-rose-500/10 text-rose-600 border-rose-300/30">
-              {deadlineText}
-            </Badge>
+      <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-3xl font-heading font-bold flex items-center gap-3 text-white">
+              <div className="p-2 rounded-xl bg-indigo-500/20 neon-glow">
+                <BookOpen className="w-7 h-7 text-indigo-400" />
+              </div>
+              {selectedAssignment.title}
+            </h2>
+            <div className="flex gap-3 mt-4">
+              <Badge className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 text-sm rounded-full">
+                {selectedAssignment.subject}
+              </Badge>
+              <Badge className={cn(
+                "px-3 py-1 text-sm rounded-full border",
+                deadlineText === "Overdue" 
+                  ? "bg-rose-500/20 text-rose-300 border-rose-500/30" 
+                  : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+              )}>
+                {deadlineText}
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-xs text-gray-500 uppercase tracking-wider mb-2">Completion Progress</span>
+            <div className="w-48 h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+              <div 
+                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500" 
+                style={{ width: `${mySubmission ? '100%' : '0%'}` }}
+              />
+            </div>
           </div>
         </div>
 
         <ScrollArea className="flex-1 pr-4">
-          {questions.map((q, idx) => (
-            <Card
-              key={q.id}
-              onClick={() => setSelectedQuestion(q)}
-              className={`mb-4 cursor-pointer border-l-4 transition-all ${
-                selectedQuestion?.id === q.id
-                  ? "border-indigo-600 bg-indigo-50/60 dark:bg-indigo-900/20 shadow"
-                  : "border-transparent hover:border-indigo-300"
-              }`}
-            >
-              <CardContent className="p-4 flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
-                  {idx + 1}
-                </div>
-                <p className="flex-1 text-sm text-gray-700 dark:text-gray-200">
-                  {q.text}
-                </p>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </CardContent>
-            </Card>
-          ))}
+          <div className="space-y-4">
+            {questions.map((q, idx) => (
+              <Card
+                key={q.id}
+                onClick={() => setSelectedQuestion(q)}
+                className={cn(
+                  "cursor-pointer transition-all duration-300 border-l-4 animate-fade-in-up",
+                  selectedQuestion?.id === q.id
+                    ? "glass-card border-l-indigo-500 neon-glow translate-x-1"
+                    : "bg-gray-900/40 border-l-transparent border-gray-800 hover:border-l-indigo-500/50"
+                )}
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <CardContent className="p-5 flex gap-5">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg transition-colors",
+                    selectedQuestion?.id === q.id
+                      ? "bg-indigo-500 text-white"
+                      : "bg-gray-800 text-gray-400"
+                  )}>
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <p className={cn(
+                      "text-base leading-relaxed transition-colors",
+                      selectedQuestion?.id === q.id ? "text-white" : "text-gray-400"
+                    )}>
+                      {q.text}
+                    </p>
+                  </div>
+                  <ChevronRight className={cn(
+                    "w-6 h-6 transition-transform",
+                    selectedQuestion?.id === q.id ? "text-indigo-400 translate-x-1" : "text-gray-600"
+                  )} />
+                </CardContent>
+              </Card>
+            ))}
 
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <h4 className="font-semibold flex gap-2 text-amber-800">
-              <ShieldCheck className="w-5 h-5" />
-              Academic Integrity
-            </h4>
-            <p className="text-xs text-amber-700 mt-1">
-              AI provides guidance only. Plagiarism detection is enabled.
-            </p>
+            <div className="p-5 glass-emerald border-emerald-500/20 rounded-xl flex items-start gap-4">
+              <div className="p-2 rounded-lg bg-emerald-500/20">
+                <ShieldCheck className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-300">Academic Integrity</h4>
+                <p className="text-sm text-emerald-300/60 mt-1">
+                  AI provides guidance only. Advanced plagiarism detection is active to ensure your learning experience.
+                </p>
+              </div>
+            </div>
           </div>
         </ScrollArea>
 
         {/* SUBMISSION */}
-        <div className="border-t pt-4">
-          <h3 className="font-semibold flex gap-2 mb-3">
-            <FileText className="w-5 h-5 text-indigo-600" />
+        <div className="mt-4 pt-6 border-t border-gray-800">
+          <h3 className="text-xl font-heading font-semibold flex items-center gap-2 mb-4">
+            <FileText className="w-6 h-6 text-indigo-400" />
             Your Submission
           </h3>
 
           {mySubmission && !isEditing ? (
-            <Card className="p-4 space-y-3">
-              <Badge className="bg-emerald-500/10 text-emerald-600">
-                Submitted {mySubmission.submittedAt}
-              </Badge>
-              <p className="text-sm bg-gray-100 dark:bg-gray-900 p-3 rounded font-mono line-clamp-3">
+            <Card className="glass-card border-emerald-500/20 p-5 space-y-4 animate-fade-in">
+              <div className="flex justify-between items-center">
+                <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
+                  Submitted on {mySubmission.submittedAt}
+                </Badge>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-400 hover:text-white hover:bg-gray-800"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setSubmissionText(mySubmission.content);
+                    }}
+                  >
+                    <Edit2 className="w-4 h-4 mr-2" /> Edit
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-400 hover:text-rose-400 hover:bg-rose-500/10"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="bg-black/40 p-4 rounded-xl border border-gray-800/50 font-mono text-sm text-gray-300 leading-relaxed max-h-40 overflow-y-auto">
                 {mySubmission.content}
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => {
-                  setIsEditing(true);
-                  setSubmissionText(mySubmission.content);
-                }}>
-                  <Edit2 className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button variant="destructive" size="sm" onClick={handleDelete}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               </div>
             </Card>
           ) : (
-            <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg space-y-3">
+            <div className="glass-card p-5 space-y-4 animate-slide-up">
               <textarea
-                className="w-full h-28 p-3 rounded border bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500"
-                placeholder="Write your answer here..."
+                className={cn(
+                  "w-full h-40 p-5 rounded-xl bg-black/40 border border-gray-700 text-base text-white outline-none transition-all",
+                  "focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-gray-600"
+                )}
+                placeholder="Compose your insightful answer here..."
                 value={submissionText}
                 onChange={(e) => setSubmissionText(e.target.value)}
               />
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500 italic">Auto-saves to cloud drafts every 30 seconds</p>
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-neon transition-all px-8 py-6 rounded-xl font-bold flex gap-3"
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !submissionText.trim()}
                 >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  {isEditing ? "Update" : "Submit"}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                  {isEditing ? "Update Submission" : "Finalize & Submit"}
                 </Button>
               </div>
             </div>
@@ -304,37 +360,56 @@ const SmartAssignmentAssistant = () => {
       </div>
 
       {/* RIGHT: AI ASSISTANT */}
-      <div className="w-full lg:w-96 flex flex-col rounded-xl border shadow-lg overflow-hidden bg-white dark:bg-gray-900">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
-          <h3 className="font-bold flex gap-2">
-            <Sparkles className="w-5 h-5" />
-            Smart AI Assistant
+      <div className="w-full lg:w-[400px] flex flex-col rounded-2xl glass border-white/5 shadow-2xl overflow-hidden animate-fade-in-up">
+        <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Sparkles className="w-24 h-24" />
+          </div>
+          <h3 className="font-heading font-bold text-2xl flex items-center gap-3 text-white">
+            <Sparkles className="w-6 h-6" />
+            AI ThinkPad
           </h3>
-          <p className="text-xs opacity-80">Context-aware academic help</p>
+          <p className="text-indigo-100/70 text-sm mt-1">Context-aware academic guidance</p>
         </div>
 
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-6 flex flex-col gap-6">
           {selectedQuestion ? (
-            <>
-              <p className="italic text-sm mb-4 bg-gray-50 dark:bg-gray-800 p-3 rounded">
-                “{selectedQuestion.text}”
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {selectedQuestion.explanation}
-              </p>
-              <Button
-                variant="outline"
-                className="w-full text-indigo-600"
-                onClick={() => setShowHintsPanel(true)}
-              >
-                <Lightbulb className="w-4 h-4 mr-2" />
-                Get AI Hints
-              </Button>
-            </>
+            <div className="space-y-6 animate-fade-in">
+              <div className="relative">
+                <div className="absolute -left-3 top-0 bottom-0 w-1 bg-indigo-500/50 rounded-full" />
+                <p className="italic text-lg text-white/90 leading-relaxed pl-4">
+                  “{selectedQuestion.text}”
+                </p>
+              </div>
+              
+              <div className="bg-gray-800/30 p-4 rounded-xl border border-gray-700/50 shadow-inner">
+                <div className="flex items-center gap-2 mb-2 text-indigo-300">
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Strategy Guide</span>
+                </div>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  {selectedQuestion.explanation}
+                </p>
+              </div>
+
+              <div className="mt-auto pt-6">
+                <Button
+                  className="w-full h-14 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-3"
+                  onClick={() => setShowHintsPanel(true)}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Reveal Smart Hints
+                </Button>
+                <p className="text-[10px] text-center text-gray-500 mt-4 uppercase tracking-[0.2em]">Safe for Homework</p>
+              </div>
+            </div>
           ) : (
-            <p className="text-center text-gray-400">
-              Select a question to get help.
-            </p>
+            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
+              <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-4">
+                <HelpCircle className="w-10 h-10" />
+              </div>
+              <p className="font-medium">Select a question to unlock AI guidance</p>
+            </div>
           )}
         </div>
       </div>

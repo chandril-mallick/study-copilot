@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import Toast from '../../../components/Toast';
+import DabbaBotLogo from '../../../components/DabbaBotLogo';
 
 const FutureLaunchPad = () => {
   const [jobs, setJobs] = useState([]);
@@ -84,12 +85,12 @@ const FutureLaunchPad = () => {
       await new Promise(r => setTimeout(r, 6000)); // Ensure animation plays long enough
       const response = await jobService.scrapeJobs(searchQuery);
       
-      addLog(`✅ Scraping complete! Found ${response.jobs_found} fresh opportunities.`);
+      addLog(`Scraping complete! Found ${response.jobs_found} fresh opportunities.`);
       setJobs(response.jobs); // Update with "fresh" jobs
-      setToast({ show: true, message: 'Scraping completed successfully!', type: 'success' });
+      setToast({ show: true, message: 'Found successfully!', type: 'success' });
     } catch (error) {
-      addLog(`❌ Error: ${error}`);
-      setToast({ show: true, message: 'Scraping failed', type: 'error' });
+      addLog(`Error: ${error}`);
+      setToast({ show: true, message: 'Failed to find', type: 'error' });
     } finally {
       setScraping(false);
     }
@@ -105,14 +106,13 @@ const FutureLaunchPad = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="bg-cyan-500/20 p-3 rounded-xl border border-cyan-500/30">
-              <Globe className="w-8 h-8 text-cyan-400 animate-pulse" />
+            <div className="bg-cyan-500/10 p-2 rounded-xl border border-cyan-500/20 backdrop-blur-md">
+              <DabbaBotLogo iconOnly className="scale-75" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-                Future Launch Pad
+                Job/Internship Finder
               </h1>
-              <p className="text-cyan-200/60">Launch your career with AI-powered opportunities</p>
             </div>
           </div>
         </div>
@@ -251,11 +251,11 @@ const FutureLaunchPad = () => {
                           className="w-12 h-12 rounded-lg bg-white p-1 object-contain"
                         />
                         <div>
-                          <h3 className="font-bold text-white group-hover:text-cyan-400 transition-colors">
+                          <h3 className="font-bold text-white group-hover:text-cyan-400 transition-colors text-lg">
                             {job.title}
                           </h3>
-                          <p className="text-sm text-gray-400 flex items-center gap-1">
-                            <Building2 className="w-3 h-3" />
+                          <p className="text-sm text-gray-200 flex items-center gap-2 font-medium">
+                            <Building2 className="w-3.5 h-3.5 text-cyan-400" />
                             {job.company}
                           </p>
                         </div>
@@ -276,22 +276,22 @@ const FutureLaunchPad = () => {
                           {job.source}
                         </Badge>
                       )}
-                      <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800">
-                        <MapPin className="w-3 h-3 mr-1 text-slate-400" />
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                        <MapPin className="w-3 h-3 mr-1 text-cyan-400" />
                         {job.location}
                       </Badge>
-                      <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800">
-                         <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                         <Clock className="w-3 h-3 mr-1 text-cyan-400" />
                          {job.type}
                       </Badge>
-                      <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-800">
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
                          {job.posted_date}
                       </Badge>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 mb-6">
                       {job.tags.map(tag => (
-                        <span key={tag} className="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                        <span key={tag} className="text-[10px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
                           {tag}
                         </span>
                       ))}
@@ -300,7 +300,7 @@ const FutureLaunchPad = () => {
                     <div className="mt-auto pt-4 border-t border-white/5 flex gap-3">
                       <Button 
                         onClick={() => window.open(job.apply_link, '_blank')}
-                        className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold gap-2"
+                        className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold gap-2 shadow-lg shadow-cyan-500/20 py-6 transition-all duration-300 hover:scale-[1.02]"
                       >
                         Apply Now <ExternalLink className="w-4 h-4" />
                       </Button>

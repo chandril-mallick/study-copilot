@@ -346,7 +346,7 @@ async def predict_performance(
 @router.post("/management/policy/generate")
 async def generate_policy(
     topic: str,
-    template_type: str,  # circular, regulation, compliance
+    template_type: str,  # circular, regulation, compliance, notice
     current_user: User = Depends(require_admin_or_management)
 ):
     """Generate policy document using AI"""
@@ -366,6 +366,12 @@ async def generate_policy(
     - Mandatory requirement.
     - Consequences of falling below 75%.
     - Medical exemptions logic.
+
+    If template_type is "notice", ensure it follows a standard institutional notice format:
+    - Subject Line at the top.
+    - Reference Number (mocked).
+    - Clear, concise instructions or information.
+    - Mentioning the specific date if provided.
     """
     
     try:
